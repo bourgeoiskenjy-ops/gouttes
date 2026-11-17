@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d7c8c">
+<title>Mes gouttes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout : une colonne mobile, une carte "maintenant" en tête, le plan du jour dessous */
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --fg:#14232c; --muted:#5b6d78; --line:#dbe3e8;
+  --accent:#0d7c8c; --accent-fg:#ffffff; --accent-soft:#dff1f3; --ok:#2f7d4f; --warn:#b5651d;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e171c; --surface:#16232a; --fg:#e4eef2; --muted:#93a7b1; --line:#24353e;
+  --accent:#3fb6c6; --accent-fg:#06222a; --accent-soft:#163a42; --ok:#5cc187; --warn:#e3a05c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171c; --surface:#16232a; --fg:#e4eef2; --muted:#93a7b1; --line:#24353e;
+  --accent:#3fb6c6; --accent-fg:#06222a; --accent-soft:#163a42; --ok:#5cc187; --warn:#e3a05c; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45}
+a.btn{display:block;text-align:center;text-decoration:none;font-weight:600;border-radius:10px;padding:12px 14px;background:var(--accent);color:var(--accent-fg)}
+code{font-size:.85rem;word-break:break-all}
+.wrap{max-width:520px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+h1,h2,.big{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:1.5rem}
+h2{font-size:1rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.meta{color:var(--muted);font-size:.9rem;margin:4px 0 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.now{border-color:var(--accent);box-shadow:0 2px 14px color-mix(in srgb,var(--accent) 18%,transparent)}
+.label{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.big{font-size:2.1rem;line-height:1.1}
+.sub{color:var(--muted);margin:0}
+.timer{font-family:var(--display);font-size:3.2rem;font-variant-numeric:tabular-nums;line-height:1}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:12px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-size:1.15rem;padding:16px}
+button.small{padding:6px 10px;font-size:.85rem}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>button{flex:1}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.steps li{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;background:var(--bg)}
+.steps li.cur{background:var(--accent-soft);font-weight:600}
+.steps li.done{color:var(--muted);text-decoration:line-through}
+.chip{font-size:.75rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.sess{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.sess:first-of-type{border-top:0}
+.sess .names{color:var(--muted);font-size:.88rem}
+.sess.done .t{color:var(--ok)}
+.t{font-weight:600}
+.hint{font-size:.88rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px}
+.hint a{color:var(--accent)}
+.check{display:flex;align-items:center;gap:10px;font-weight:500}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+details summary{cursor:pointer;font-weight:600}
+.ord{display:flex;align-items:center;gap:8px;padding:6px 0}
+.ord span{flex:1}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.9rem;color:var(--muted)}
+input[type=number],input[type=date]{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.warn{color:var(--warn);font-size:.85rem}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:p 1.2s ease-in-out infinite}@keyframes p{50%{opacity:.55}}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header>
+    <h1>Mes gouttes</h1>
+    <p class="meta" id="meta"></p>
+  </header>
+  <section class="card now" id="now"></section>
+  <section class="card" id="plan"></section>
+  <section class="card" id="extra"></section>
+  <details class="card" id="settings">
+    <summary>Réglages</summary>
+    <div id="settingsBody" style="display:flex;flex-direction:column;gap:14px"></div>
+  </details>
+</div>
+
+<script>
+const DRUGS={
+  levofree:{name:"Levofree",what:"antibiotique"},
+  dexafree:{name:"Dexafree",what:"corticoïde, dose dégressive"},
+  naabak:{name:"Naabak",what:"anti-allergique"},
+  neovis:{name:"Neovis Total",what:"larmes artificielles"},
+  verkazia:{name:"Verkazia",what:"émulsion, ciclosporine"}
+};
+const SESSIONS=["Matin","Midi","Après-midi","Soir"];
+const DEFAULTS={order:["levofree","dexafree","naabak","neovis","verkazia"],delay:15,start:"2026-11-13"};
+
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+let cfg=Object.assign({},DEFAULTS,load("gouttes.cfg",{}));
+// La journée commence à 4h du matin
+function dayKey(t=Date.now()){const d=new Date(t-4*3600e3);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function emptyDay(){return{done:[false,false,false,false],run:null,neovisExtra:0,mask:false}}
+let key=dayKey(),day=load("gouttes.day."+key,emptyDay());
+function persist(){save("gouttes.day."+key,day);save("gouttes.cfg",cfg)}
+
+function dayIndex(){const a=new Date(cfg.start+"T12:00:00"),b=new Date(key+"T12:00:00");return Math.round((b-a)/864e5)}
+function dexaPerDay(){const i=dayIndex();if(i<7)return 4;if(i<14)return 3;if(i<21)return 2;if(i<28)return 1;return 0}
+const DEXA_SLOTS={4:[0,1,2,3],3:[0,2,3],2:[0,3],1:[0],0:[]};
+
+function drugsFor(s){
+  const set=new Set(["verkazia","neovis"]);
+  if(s===0||s===3){set.add("levofree");set.add("naabak")}
+  if(DEXA_SLOTS[dexaPerDay()].includes(s))set.add("dexafree");
+  const list=cfg.order.filter(d=>set.has(d)).map(d=>({id:d,optional:false}));
+  if(s===2){const i=cfg.order.indexOf("naabak");const opt={id:"naabak",optional:true};
+    // insère Naabak (3e prise facultative) à sa place dans l'ordre
+    let pos=list.findIndex(x=>cfg.order.indexOf(x.id)>i);list.splice(pos<0?list.length:pos,0,opt)}
+  return list;
+}
+function neovisCount(){return day.done.filter(Boolean).length+(day.run?day.run.steps.filter(s=>s.id==="neovis"&&s.state==="done").length:0)+day.neovisExtra}
+
+// ---- Notifications ntfy (le serveur ntfy.sh garde le délai, la page peut être fermée)
+let topic=load("gouttes.topic",null);
+if(!topic){const a=new Uint8Array(12);crypto.getRandomValues(a);topic="gouttes-"+Array.from(a,b=>b.toString(36).padStart(2,"0")).join("").slice(0,20);save("gouttes.topic",topic)}
+if(cfg.notif===undefined)cfg.notif=true;
+let ntfyStatus="";
+const PAGE_URL=location.href.split("#")[0];
+async function ntfy(method,sid,headers={},body){
+  if(!cfg.notif)return;
+  try{const r=await fetch(`https://ntfy.sh/${topic}/${sid}`,{method,headers,body});
+    if(method!=="DELETE"&&!r.ok)throw new Error(r.status);ntfyStatus=method==="DELETE"?ntfyStatus:"Dernier envoi : OK à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}
+  catch(e){ntfyStatus="Échec d'envoi de la notification (pas de réseau ?)"}
+  const s=$("ntfyst");if(s)s.textContent=ntfyStatus;
+}
+// Notification silencieuse qui reste dans le volet : « Prochaine goutte : X »
+function notifyNext(text){return ntfy("POST","prochaine",{Title:"Gouttes",Priority:"2",Tags:"droplet",Click:PAGE_URL},text)}
+async function cancelDing(){await ntfy("DELETE","ding")}
+// Un seul ding, X minutes plus tard
+async function scheduleDing(name){await cancelDing();await ntfy("POST","ding",{Title:"C'est l'heure",Priority:"3",Tags:"bell",Click:PAGE_URL,In:cfg.delay+"m"},"Tu peux prendre "+name)}
+function nextSessionText(){const n=day.done.indexOf(false);return n<0?"Toutes les prises du jour sont faites ✓":"Prochaine prise : "+SESSIONS[n]+" ("+drugsFor(n).map(d=>DRUGS[d.id].name).join(", ")+")"}
+
+function startSession(s){day.run={s,steps:drugsFor(s).map(x=>({...x,state:"todo"})),nextAt:null};persist();render();
+  cancelDing();notifyNext(SESSIONS[s]+" · prochaine goutte : "+DRUGS[day.run.steps[0].id].name)}
+function curStep(){return day.run?day.run.steps.findIndex(x=>x.state==="todo"):-1}
+function mark(state){
+  const i=curStep();if(i<0)return;day.run.steps[i].state=state;
+  const s=day.run.s;
+  if(curStep()<0){day.done[s]=true;day.run=null;cancelDing();notifyNext(nextSessionText())}
+  else{day.run.nextAt=state==="done"?Date.now()+cfg.delay*60e3:null;
+    const nm=DRUGS[day.run.steps[curStep()].id].name;
+    notifyNext(SESSIONS[s]+" · prochaine goutte : "+nm+(state==="done"?" (pas avant "+new Date(day.run.nextAt).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+")":""));
+    if(state==="done")scheduleDing(nm);else cancelDing()}
+  persist();render();if(state==="done")unlockAudio();
+}
+function cancelRun(){day.run=null;persist();render();cancelDing();notifyNext(nextSessionText())}
+
+let audioCtx=null;
+function unlockAudio(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume()}catch(e){}}
+// Un seul "ding" doux, une fois
+function beep(){try{if(!audioCtx)return;const t=audioCtx.currentTime;[1318.5,2637].forEach((f,k)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="sine";o.frequency.value=f;o.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(k?.03:.12,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+1.2);o.start(t);o.stop(t+1.25)})}catch(e){}try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
+let wake=null;
+async function toggleWake(on){try{if(on){wake=await navigator.wakeLock.request("screen")}else if(wake){await wake.release();wake=null}}catch(e){wake=null}render()}
+
+const $=id=>document.getElementById(id);
+function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+let rang=false;
+
+function renderNow(){
+  const el=$("now");
+  if(!day.run){
+    const next=day.done.indexOf(false);
+    if(next<0){el.innerHTML=`<span class="label">Aujourd'hui</span><div class="big">Toutes les prises sont faites</div><p class="sub">Tu peux encore ajouter du Neovis Total si tes yeux sont secs (jusqu'à 8 par jour).</p>`;return}
+    const names=drugsFor(next).map(d=>DRUGS[d.id].name).join(", ");
+    el.innerHTML=`<span class="label">Prochaine prise</span><div class="big">${SESSIONS[next]}</div><p class="sub">${names}</p><button class="primary" id="go">Commencer la prise</button>`;
+    $("go").onclick=()=>{unlockAudio();startSession(next)};return;
+  }
+  const r=day.run,i=curStep(),st=r.steps[i],d=DRUGS[st.id];
+  const wait=r.nextAt?r.nextAt-Date.now():0;
+  const list=r.steps.map((x,k)=>`<li class="${x.state!=="todo"?"done":k===i?"cur":""}"><span>${DRUGS[x.id].name}</span>${x.state==="skip"?'<span class="chip">passée</span>':x.optional?'<span class="chip">facultative</span>':""}</li>`).join("");
+  if(wait>0){
+    el.innerHTML=`<span class="label">${SESSIONS[r.s]} · attente entre deux gouttes</span>
+      <div class="timer" id="tm">${fmt(wait)}</div>
+      <p class="sub">Ensuite : <strong>${d.name}</strong></p>
+      <div class="hint">${cfg.notif?"Tu peux fermer l'app : un petit ding arrivera par ntfy à la fin.":"Un petit ding sonnera à la fin, si cette page reste ouverte à l'écran."}</div>
+      <label class="check"><input type="checkbox" id="wk" ${wake?"checked":""}> Garder l'écran allumé</label>
+      <ol class="steps">${list}</ol>
+      <div class="row"><button class="small" id="early">Je la prends maintenant</button><button class="small" id="cx">Arrêter la prise</button></div>`;
+    $("early").onclick=()=>{day.run.nextAt=null;persist();render();cancelDing()};
+  }else{
+    if(r.nextAt&&!rang){rang=true;beep()}
+    el.innerHTML=`<span class="label pulse">${SESSIONS[r.s]} · à prendre maintenant</span>
+      <div class="big">${d.name}</div>
+      <p class="sub">1 goutte · ${d.what}${st.optional?" · 3e prise facultative du jour":""}</p>
+      <button class="primary" id="ok">C'est fait</button>
+      <ol class="steps">${list}</ol>
+      <div class="row"><button class="small" id="skip">${st.optional?"Pas aujourd'hui":"Passer cette goutte"}</button><button class="small" id="cx">Arrêter la prise</button></div>`;
+    $("ok").onclick=()=>{rang=false;mark("done")};
+    $("skip").onclick=()=>{rang=false;mark("skip")};
+  }
+  $("cx").onclick=cancelRun;
+  const wk=$("wk");if(wk)wk.onchange=e=>toggleWake(e.target.checked);
+}
+
+function renderPlan(){
+  const n=dexaPerDay(),j=dayIndex()+1;
+  $("meta").textContent=`Jour ${j} du traitement · Dexafree ${n?n+" fois/jour":"arrêté"}`;
+  $("plan").innerHTML=`<h2>Plan du jour</h2>`+SESSIONS.map((s,i)=>{
+    const ds=drugsFor(i).map(d=>DRUGS[d.id].name+(d.optional?" (facult.)":"")).join(" → ");
+    const running=day.run&&day.run.s===i;
+    return `<div class="sess ${day.done[i]?"done":""}"><div><div class="t">${day.done[i]?"✓ ":""}${s}${running?" · en cours":""}</div><div class="names">${ds}</div></div>${!day.done[i]&&!day.run?`<button class="small" data-s="${i}">Faire</button>`:day.done[i]?`<button class="small" data-u="${i}">Annuler</button>`:""}</div>`}).join("");
+  $("plan").querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{unlockAudio();startSession(+b.dataset.s)});
+  $("plan").querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>{day.done[+b.dataset.u]=false;persist();render()});
+}
+
+function renderExtra(){
+  const c=neovisCount();
+  $("extra").innerHTML=`<h2>En plus</h2>
+    <div class="sess"><div><div class="t">Neovis Total en plus</div><div class="names">${c} sur 8 aujourd'hui (minimum 4)</div></div><button class="small" id="nv" ${c>=8?"disabled":""}>+1 goutte</button></div>
+    <div class="sess"><label class="check"><input type="checkbox" id="mk" ${day.mask?"checked":""}> Masque Therapearl et soin des paupières</label></div>`;
+  $("nv").onclick=()=>{day.neovisExtra++;persist();render()};
+  $("mk").onchange=e=>{day.mask=e.target.checked;persist()};
+}
+
+function renderSettings(){
+  const b=$("settingsBody");
+  b.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px"><div class="t">Notifications (app ntfy)</div>
+      <p class="sub" style="font-size:.85rem">1. Installe l'app ntfy depuis le Play Store. 2. Touche le bouton ci-dessous pour t'abonner à ton canal privé. 3. Envoie un test.</p>
+      <a class="btn" href="ntfy://ntfy.sh/${topic}?display=Gouttes">S'abonner dans ntfy</a>
+      <p class="sub" style="font-size:.8rem">Si le bouton ne marche pas, dans ntfy : « + », serveur ntfy.sh, canal <code>${topic}</code></p>
+      <button class="small" id="tst">Envoyer une notification de test</button>
+      <label class="check"><input type="checkbox" id="nt" ${cfg.notif?"checked":""}> Notifications activées</label>
+      <span class="sub" style="font-size:.8rem" id="ntfyst">${ntfyStatus}</span></div>
+    <div><div class="t">Ordre des gouttes</div><p class="sub" style="font-size:.85rem">Collyres liquides d'abord, puis le plus épais (Neovis), et Verkazia toujours en dernier (notice officielle). 15 min minimum entre deux gouttes.</p>
+    ${cfg.order.map((d,i)=>`<div class="ord"><span>${i+1}. ${DRUGS[d].name}</span><button class="small" data-up="${i}" ${i?"":"disabled"} aria-label="Monter">↑</button><button class="small" data-dn="${i}" ${i<cfg.order.length-1?"":"disabled"} aria-label="Descendre">↓</button></div>`).join("")}</div>
+    <label class="f">Délai entre deux gouttes (minutes)<input type="number" id="dl" min="1" max="60" value="${cfg.delay}"></label>
+    <label class="f">Premier jour du traitement (pour la baisse du Dexafree)<input type="date" id="sd" value="${cfg.start}"></label>
+    <button class="small" id="rs">Remettre la journée à zéro</button><span id="rsc"></span>`;
+  b.querySelectorAll("[data-up]").forEach(x=>x.onclick=()=>{const i=+x.dataset.up;[cfg.order[i-1],cfg.order[i]]=[cfg.order[i],cfg.order[i-1]];persist();render()});
+  b.querySelectorAll("[data-dn]").forEach(x=>x.onclick=()=>{const i=+x.dataset.dn;[cfg.order[i+1],cfg.order[i]]=[cfg.order[i],cfg.order[i+1]];persist();render()});
+  $("tst").onclick=()=>{unlockAudio();beep();notifyNext("Test : si tu vois ceci, les notifications marchent.")};
+  $("nt").onchange=e=>{cfg.notif=e.target.checked;persist();render()};
+  $("dl").onchange=e=>{const v=Math.min(60,Math.max(1,+e.target.value||15));cfg.delay=v;persist();render()};
+  $("sd").onchange=e=>{if(e.target.value){cfg.start=e.target.value;persist();render()}};
+  $("rs").onclick=()=>{$("rsc").innerHTML='<button class="small" id="rsy">Oui, tout effacer pour aujourd\'hui</button>';$("rsy").onclick=()=>{day=emptyDay();persist();render()}};
+}
+
+function render(){renderNow();renderPlan();renderExtra();renderSettings()}
+
+setInterval(()=>{
+  const k=dayKey();if(k!==key){key=k;day=load("gouttes.day."+key,emptyDay());render();return}
+  if(day.run&&day.run.nextAt){const w=day.run.nextAt-Date.now();const tm=$("tm");if(w>0&&tm)tm.textContent=fmt(w);else if(w<=0&&tm)render()}
+},1000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(wake)toggleWake(true);render()}});
+render();
+</script>
+</body></html>
