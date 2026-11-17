@@ -128,7 +128,7 @@ async function ntfy(method,sid,headers={},body){
 function notifyNext(text){return ntfy("POST","prochaine",{Title:"Gouttes",Priority:"2",Tags:"droplet",Click:PAGE_URL},text)}
 async function cancelDing(){await ntfy("DELETE","ding")}
 // Un seul ding, X minutes plus tard
-async function scheduleDing(name){await cancelDing();await ntfy("POST","ding",{Title:"C'est l'heure",Priority:"3",Tags:"bell",Click:PAGE_URL,In:cfg.delay+"m"},"Tu peux prendre "+name)}
+async function scheduleDing(name){await cancelDing();await ntfy("POST","ding",{Title:"C'est l'heure",Priority:"4",Tags:"bell",Click:PAGE_URL,In:cfg.delay+"m"},"Tu peux prendre "+name)}
 function nextSessionText(){const n=day.done.indexOf(false);return n<0?"Toutes les prises du jour sont faites ✓":"Prochaine prise : "+SESSIONS[n]+" ("+drugsFor(n).map(d=>DRUGS[d.id].name).join(", ")+")"}
 
 function startSession(s){day.run={s,steps:drugsFor(s).map(x=>({...x,state:"todo"})),nextAt:null};persist();render();
