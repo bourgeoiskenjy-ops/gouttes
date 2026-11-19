@@ -83,12 +83,14 @@ const DRUGS={
   verkazia:{name:"Verkazia",what:"émulsion, ciclosporine"}
 };
 const SESSIONS=["Matin","Midi","Après-midi","Soir"];
-const DEFAULTS={order:["levofree","dexafree","naabak","neovis","verkazia"],delay:15,start:"2026-11-13",off:["verkazia"]};
+const DEFAULTS={order:["levofree","dexafree","naabak","neovis","verkazia"],delay:15,start:"2026-11-13",off:["verkazia","naabak"]};
 
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 let cfg=Object.assign({},DEFAULTS,load("gouttes.cfg",{}));
+// Naabak arrêté : on le retire une fois des réglages déjà enregistrés (recochable ensuite)
+if(!cfg.naabakOff){if(!cfg.off.includes("naabak"))cfg.off=[...cfg.off,"naabak"];cfg.naabakOff=true;save("gouttes.cfg",cfg)}
 // La journée commence à 4h du matin
 function dayKey(t=Date.now()){const d=new Date(t-4*3600e3);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function emptyDay(){return{done:[false,false,false,false],run:null,neovisExtra:0,mask:false}}
